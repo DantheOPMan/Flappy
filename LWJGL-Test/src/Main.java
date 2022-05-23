@@ -5,6 +5,8 @@ import org.lwjgl.system.*;
 
 import java.nio.*;
 
+import javax.swing.plaf.basic.BasicSplitPaneUI.BasicHorizontalLayoutManager;
+
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
@@ -14,9 +16,80 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Main {
 
 	// The window handle
+	
+	private int width = 500;
+	private int height = 500;
+
+	private Thread thread;
+	private boolean running = false;
+
 	private long window;
 
-	public void run() {
+	public void start(){
+
+		running = true;
+		thread=  new Thread("Game");
+		thread.start();
+		
+	}
+
+	private void init(){
+
+		GLFWErrorCallback.createPrint(System.err).set();
+
+		if(!glfwInit()){
+			throw new IllegalStateException("Unable to initialize GLFW");
+		}
+
+		glfwDefaultWindowHints();
+		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+
+		window = glfwCreateWindow(width, height, "FLAPPY", NULL, NULL);
+
+		if (window == NULL){
+			//TODO: handle
+			return;
+		}
+
+		GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+		glfwSetWindowPos(window, (vidmode.width()-width) /2, (vidmode.height()- height)/2);
+
+		glfwMakeContextCurrent(window);
+
+		glfwSwapInterval(GL_TRUE);
+
+		glfwShowWindow(window);
+	}
+
+	public void run(){
+		start();
+		init();
+		while(running){
+			update();
+			render();
+
+			if(glfwWindowShouldClose(window)){
+				running = false;
+			}
+		}
+
+	}
+
+	private void update(){
+		glfwPollEvents(); 
+	}
+	
+	private void render(){
+		glfwSwapBuffers(window);
+	}
+
+	public static void main(String[] args) {
+		new Main().run();
+	}
+
+}
+/*public void run() {
 		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
 		init();
@@ -63,7 +136,7 @@ public class Main {
 
 			// Get the window size passed to glfwCreateWindow
 			glfwGetWindowSize(window, pWidth, pHeight);
-
+			
 			// Get the resolution of the primary monitor
 			GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
 
@@ -106,10 +179,4 @@ public class Main {
 			// invoked during this call.
 			glfwPollEvents();
 		}
-	}
-
-	public static void main(String[] args) {
-		new Main().run();
-	}
-
-}
+	}*/
